@@ -101,6 +101,37 @@
             display: block;
             padding: 0.2em;
         }
+
+        @keyframes teleported {
+            0% {
+                opacity: 0;
+                scale: .5;
+            }
+
+            50%, 80% {
+                opacity: 1;
+                scale: 1;
+            }
+
+            to {
+                opacity: 0;
+                scale: 1.1;
+            }
+        }
+
+        #teleported {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            translate: -50% -50%;
+            pointer-events: none;
+            opacity: 0;
+
+            &.show {
+                opacity: 1;
+                animation: teleported 0.8s ease-in-out forwards;
+            }
+        }
     </style>
 </head>
 <body>
@@ -151,6 +182,8 @@
             </tbody>
         </table>
     </div>
+
+    <img id="teleported" src="./panoclick-assets/teleported.png" />
 
     <script>
         const METADATA_API_URL = "https://tile.googleapis.com/v1/streetview/metadata";
@@ -582,6 +615,8 @@
             const tableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
             //tableBody.innerHTML = ''; // Clear existing rows
 
+            let hasTeleport = false;
+
             results.forEach((res, index) => {
                 // Add to table only if distance is long
                 if (res.distance > 0) { //DISTANCE_THRESHOLD_LONG) {
@@ -599,6 +634,8 @@
                 let clickedMarkerColor = '#FFFF00'; // Yellow for short distance
 
                 if (res.distance > DISTANCE_THRESHOLD_LONG) {
+                    hasTeleport = true;
+
                     clickedMarkerColor = '#0000FF'; // Blue for long distance at clicked location
 
                     // Add marker for actual location (red)
@@ -650,6 +687,10 @@
                     .addTo(map);
                 resultFeatures.push(clickedResultMarker);
             });
+
+            if (hasTeleport) {
+                playTeleport();
+            }
         }
         class MapControls {
             constructor(ctrls) {
@@ -712,6 +753,15 @@
             }
         }
 
+        function playTeleport() {
+            const image = document.querySelector('#teleported');
+            image.classList.add('show');
+            setTimeout(() => image.classList.remove('show'), 800);
+
+            const audio = document.createElement('audio');
+            audio.src = './panoclick-assets/teleport.wav';
+            audio.play();
+        }
     </script>
 
 </body>
